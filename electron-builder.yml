@@ -10,6 +10,7 @@ mac:
   category: public.app-category.education
   icon: build/icon.icns
   identity: "-"
+  hardenedRuntime: false
   target:
     - target: dmg
       arch: [universal]

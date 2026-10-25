@@ -23,7 +23,10 @@ export default function useForm(initial, validate) {
       setValues((prev) => ({ ...prev, [name]: v }))
       setServerErrors((prev) => ({ ...prev, [name]: undefined }))
     },
-    onBlur: () => setTouched((prev) => ({ ...prev, [name]: true }))
+    // Leaving an untouched empty field (e.g. window losing focus) shouldn't flag it.
+    onBlur: (e) => {
+      if (e.target.value !== '') setTouched((prev) => ({ ...prev, [name]: true }))
+    }
   })
 
   // Returns true when the form is valid and ready to submit.
