@@ -1,0 +1,17 @@
+appId: com.campusfind.app
+productName: CampusFind
+directories:
+  buildResources: build
+  output: release
+files:
+  - out/**
+  - package.json
+mac:
+  category: public.app-category.education
+  icon: build/icon.icns
+  identity: "-"
+  target:
+    - target: dmg
+      arch: [universal]
+dmg:
+  artifactName: CampusFind-${version}.dmg
