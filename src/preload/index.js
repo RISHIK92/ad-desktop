@@ -12,5 +12,15 @@ contextBridge.exposeInMainWorld('api', {
     me: call('auth:me'),
     logout: call('auth:logout'),
     updateProfile: call('auth:updateProfile')
+  },
+  reports: {
+    list: call('reports:list'),
+    mine: call('reports:mine'),
+    get: call('reports:get'),
+    create: call('reports:create'),
+    update: call('reports:update'),
+    setStatus: call('reports:setStatus'),
+    resolvePair: call('reports:resolvePair'),
+    delete: call('reports:delete')
   }
 })

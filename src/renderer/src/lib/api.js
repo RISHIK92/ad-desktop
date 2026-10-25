@@ -47,6 +47,16 @@ const api = {
     me: (token) => unwrap(w.auth.me(token), { authed: false }),
     logout: authed(w.auth.logout),
     updateProfile: authed(w.auth.updateProfile)
+  },
+  reports: {
+    list: authed(w.reports.list),
+    mine: authed(w.reports.mine),
+    get: authed(w.reports.get),
+    create: authed(w.reports.create),
+    update: authed(w.reports.update),
+    setStatus: authed(w.reports.setStatus),
+    resolvePair: authed(w.reports.resolvePair),
+    delete: authed(w.reports.delete)
   }
 }
 

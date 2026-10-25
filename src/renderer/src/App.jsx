@@ -4,6 +4,11 @@ import Navbar from './components/Navbar'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import NewReport from './pages/NewReport'
+import EditReport from './pages/EditReport'
+import ReportDetail from './pages/ReportDetail'
+import MyReports from './pages/MyReports'
+import { ToastProvider } from './components/Toast'
 
 function Splash() {
   return <div className="splash">Loading…</div>
@@ -32,19 +37,25 @@ function GuestRoute() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <HashRouter>
-        <Routes>
-          <Route element={<GuestRoute />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Route>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Dashboard />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </HashRouter>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <HashRouter>
+          <Routes>
+            <Route element={<GuestRoute />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/reports/new" element={<NewReport />} />
+              <Route path="/reports/:id" element={<ReportDetail />} />
+              <Route path="/reports/:id/edit" element={<EditReport />} />
+              <Route path="/my-reports" element={<MyReports />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </HashRouter>
+      </AuthProvider>
+    </ToastProvider>
   )
 }
