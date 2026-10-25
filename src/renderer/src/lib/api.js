@@ -57,6 +57,9 @@ const api = {
     setStatus: authed(w.reports.setStatus),
     resolvePair: authed(w.reports.resolvePair),
     delete: authed(w.reports.delete)
+  },
+  matches: {
+    forReport: authed(w.matches.forReport)
   }
 }
 

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/Toast'
 import StatusBadge, { TypeBadge } from '../components/StatusBadge'
 import ConfirmDialog from '../components/ConfirmDialog'
+import MatchList from '../components/MatchList'
 import { Loading, ErrorState } from '../components/EmptyState'
 import { formatDate, formatDateTime } from '../lib/format'
 
@@ -26,6 +27,12 @@ export default function ReportDetail() {
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [busy, setBusy] = useState(false)
   const { data: report, error, loading, reload } = useAsync(() => api.reports.get(id), [id])
+  const matches = useAsync(() => api.matches.forReport(id), [id])
+  const linkedId = report?.resolvedWithReportId
+  const linked = useAsync(
+    () => (linkedId ? api.reports.get(linkedId).catch(() => null) : Promise.resolve(null)),
+    [linkedId]
+  )
 
   if (loading && !report) return <Loading />
   if (error) return <ErrorState error={error} onRetry={reload} />
@@ -39,10 +46,22 @@ export default function ReportDetail() {
       await api.reports.setStatus(id, status)
       toast(status === 'resolved' ? 'Marked as resolved' : 'Report reopened')
       reload({ silent: true })
+      matches.reload({ silent: true })
     } catch (err) {
       toast(err.message, 'error')
     } finally {
       setBusy(false)
+    }
+  }
+
+  const resolvePair = async (match) => {
+    try {
+      await api.reports.resolvePair(id, match.report.id)
+      toast('Both reports marked resolved')
+      reload({ silent: true })
+      matches.reload({ silent: true })
+    } catch (err) {
+      toast(err.message, 'error')
     }
   }
 
@@ -154,6 +173,39 @@ export default function ReportDetail() {
           )}
         </aside>
       </div>
+
+      {linked.data ? (
+        <section className="card section">
+          <h2>Resolved with</h2>
+          <Link to={`/reports/${linked.data.id}`} className="linked">
+            <TypeBadge type={linked.data.type} />
+            <strong>{linked.data.title}</strong>
+            <span className="muted small">
+              {linked.data.location} · {formatDate(linked.data.date)} · by {linked.data.ownerName}
+            </span>
+          </Link>
+        </section>
+      ) : (
+        isOpen && (
+          <section className="card section">
+            <div className="section__header">
+              <h2>Suggested matches</h2>
+              <span className="muted small">
+                {report.type === 'lost' ? 'Found' : 'Lost'} reports in the same category posted
+                around the same time
+              </span>
+            </div>
+            <MatchList
+              matches={matches.data}
+              loading={matches.loading}
+              error={matches.error}
+              onRetry={matches.reload}
+              canResolve={isOwner}
+              onResolve={resolvePair}
+            />
+          </section>
+        )
+      )}
 
       <ConfirmDialog
         open={confirmDelete}

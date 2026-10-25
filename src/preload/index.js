@@ -22,5 +22,8 @@ contextBridge.exposeInMainWorld('api', {
     setStatus: call('reports:setStatus'),
     resolvePair: call('reports:resolvePair'),
     delete: call('reports:delete')
+  },
+  matches: {
+    forReport: call('matches:forReport')
   }
 })

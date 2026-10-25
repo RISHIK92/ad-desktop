@@ -1,9 +1,11 @@
 import { ipcMain } from 'electron'
 import { getDb, mutate } from '../store'
-import { wrap, validationError } from '../errors'
+import { wrap, validationError, forbidden } from '../errors'
 import { requireAuth, newId } from '../auth'
 import { findReport, requireOwner, serializeReport } from '../reports'
 import { validateReport, validateStatus } from '../../shared/validators'
+import { matchCounts } from './matchHandlers'
+import { isCandidate } from '../../shared/matching'
 
 function cleanInput(input) {
   const { valid, errors, value } = validateReport(input)
@@ -58,10 +60,11 @@ export function registerReportHandlers() {
     'reports:mine',
     wrap((token) => {
       const user = requireAuth(token)
+      const counts = matchCounts(user.id)
       return getDb()
         .reports.filter((r) => r.userId === user.id)
         .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        .map((r) => ({ ...serializeReport(r, user), matchCount: 0 }))
+        .map((r) => ({ ...serializeReport(r, user), matchCount: counts.get(r.id) || 0 }))
     })
   )
 
@@ -122,6 +125,51 @@ export function registerReportHandlers() {
         report.status = status
         report.updatedAt = new Date().toISOString()
         return serializeReport(report, user)
+      })
+    })
+  )
+
+  ipcMain.handle(
+    'reports:resolvePair',
+    wrap((token, reportId, matchedReportId) => {
+      const user = requireAuth(token)
+      const report = findReport(reportId)
+      const matched = findReport(matchedReportId)
+      if (report.userId !== user.id && matched.userId !== user.id) {
+        throw forbidden('You must own one of these reports')
+      }
+      if (!isCandidate(report, matched)) {
+        throw validationError({
+          matchedReportId: 'These reports can’t be paired — they must be an open lost and found pair from different people in the same category'
+        })
+      }
+      return mutate((db) => {
+        const now = new Date().toISOString()
+        for (const [r, other] of [
+          [report, matched],
+          [matched, report]
+        ]) {
+          r.status = 'resolved'
+          r.resolvedWithReportId = other.id
+          r.updatedAt = now
+        }
+        // Let the other owner know, in the thread about the found report.
+        const otherUserId = report.userId === user.id ? matched.userId : report.userId
+        if (otherUserId !== user.id) {
+          const found = report.type === 'found' ? report : matched
+          const lost = report.type === 'lost' ? report : matched
+          db.messages.push({
+            id: newId(),
+            reportId: found.id,
+            fromUserId: user.id,
+            toUserId: otherUserId,
+            body: `${user.name} marked “${lost.title}” and “${found.title}” as resolved. Glad it found its way home!`,
+            system: true,
+            read: false,
+            createdAt: now
+          })
+        }
+        return { report: serializeReport(report, user), matched: serializeReport(matched, user) }
       })
     })
   )
