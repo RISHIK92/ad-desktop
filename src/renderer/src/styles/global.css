@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light dark;
   --bg: #f5f6fa;
   --surface: #ffffff;
   --surface-2: #f0f2f7;
@@ -416,6 +417,7 @@ textarea:focus {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 .pill--count {
   background: var(--danger);

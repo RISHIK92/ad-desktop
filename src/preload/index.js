@@ -25,5 +25,14 @@ contextBridge.exposeInMainWorld('api', {
   },
   matches: {
     forReport: call('matches:forReport')
+  },
+  messages: {
+    threads: call('messages:threads'),
+    thread: call('messages:thread'),
+    send: call('messages:send'),
+    unreadCount: call('messages:unreadCount')
+  },
+  dashboard: {
+    stats: call('dashboard:stats')
   }
 })

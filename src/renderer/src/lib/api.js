@@ -60,6 +60,15 @@ const api = {
   },
   matches: {
     forReport: authed(w.matches.forReport)
+  },
+  messages: {
+    threads: authed(w.messages.threads),
+    thread: authed(w.messages.thread),
+    send: authed(w.messages.send),
+    unreadCount: authed(w.messages.unreadCount)
+  },
+  dashboard: {
+    stats: authed(w.dashboard.stats)
   }
 }
 
