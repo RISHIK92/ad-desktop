@@ -25,7 +25,35 @@ function unlinkPartner(db, report) {
   delete report.resolvedWithReportId
 }
 
+function filterReports(reports, f = {}) {
+  const q = typeof f.q === 'string' ? f.q.trim().toLowerCase() : ''
+  const status = f.status === undefined ? 'open' : f.status
+  const out = reports.filter((r) => {
+    if (f.type && f.type !== 'all' && r.type !== f.type) return false
+    if (f.category && r.category !== f.category) return false
+    if (f.location && r.location !== f.location) return false
+    if (status && status !== 'all' && r.status !== status) return false
+    if (f.dateFrom && r.date < f.dateFrom) return false
+    if (f.dateTo && r.date > f.dateTo) return false
+    if (q) {
+      const hay = `${r.title} ${r.description} ${r.locationDetail || ''}`.toLowerCase()
+      if (!q.split(/\s+/).every((word) => hay.includes(word))) return false
+    }
+    return true
+  })
+  const dir = f.sort === 'oldest' ? 1 : -1
+  return out.sort((a, b) => dir * (a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt)))
+}
+
 export function registerReportHandlers() {
+  ipcMain.handle(
+    'reports:list',
+    wrap((token, filters) => {
+      const user = requireAuth(token)
+      return filterReports(getDb().reports, filters).map((r) => serializeReport(r, user))
+    })
+  )
+
   ipcMain.handle(
     'reports:mine',
     wrap((token) => {

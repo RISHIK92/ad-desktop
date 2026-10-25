@@ -4,6 +4,7 @@ import Navbar from './components/Navbar'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import Browse from './pages/Browse'
 import NewReport from './pages/NewReport'
 import EditReport from './pages/EditReport'
 import ReportDetail from './pages/ReportDetail'
@@ -47,6 +48,7 @@ export default function App() {
             </Route>
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/browse" element={<Browse />} />
               <Route path="/reports/new" element={<NewReport />} />
               <Route path="/reports/:id" element={<ReportDetail />} />
               <Route path="/reports/:id/edit" element={<EditReport />} />
